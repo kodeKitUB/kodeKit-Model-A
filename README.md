@@ -1,1 +1,2 @@
-Alt i ett biblotek for "kodeKit - Model A" komponenten
+Program laget spesielt for kodeKit-Model A 
+https://kodeKit.no
