@@ -1,14 +1,18 @@
 /*
 *
-* Official code for kodeKit Model-A Demo
+* Official code for kodeKit NM Demo
 * Created by Augustin Winther 
 *
 */
 
 /*
-* Page 1 = Meny
-* Page 2 = RGB
+* LCD_page1 = Meny
+* LCD_page2 = RGB
+*
+*
 */
+
+
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
@@ -43,9 +47,9 @@ Adafruit_PCD8544 lcd = Adafruit_PCD8544(LCD_CLK, LCD_DIN, LCD_DC, LCD_CE, LCD_RS
 #define SOUND A3
 #define DHT A4
 
-int contrast = 50;
-int menuItem = 1;
-int page = 1;
+int LCD_contrast = 50;
+int LCD_menu = 1;
+int LCD_LCD_page= 1;
 
 int redVal = 0;
 int greenVal = 0;
@@ -65,7 +69,7 @@ void setup()
   
   //Display Setup
   lcd.begin();      
-  lcd.setContrast(contrast);
+  lcd.setContrast(LCD_contrast);
   lcd.clearDisplay(); 
   lcd.display();
   drawMenu();
@@ -79,7 +83,7 @@ void loop()
 
 void drawMenu() 
 {
-  if (page == 1) //Meny
+  if (LCD_page== 1) //Meny
   {    
     lcd.setTextSize(1);
     lcd.clearDisplay();
@@ -89,7 +93,7 @@ void drawMenu()
     lcd.drawFastHLine(0,10,83,BLACK);
    
     //******************//
-    if (menuItem == 1) 
+    if (LCD_menu == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
     }
@@ -101,7 +105,7 @@ void drawMenu()
     lcd.print("> RGB Lys");
    
     //******************//   
-    if (menuItem == 2) 
+    if (LCD_menu == 2) 
     {
       lcd.setTextColor(WHITE, BLACK);
     }
@@ -113,7 +117,7 @@ void drawMenu()
     lcd.print("> Buzzer");
     
     //******************//
-    if (menuItem == 3) 
+    if (LCD_menu == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
     }
@@ -127,13 +131,13 @@ void drawMenu()
   }
   
 /**************************************/
-  else if (page == 2) //RGB
+  else if (LCD_page== 2) //RGB
   {
     lcd.setTextSize(1);
     lcd.clearDisplay();
     
     //******************//
-    if (menuItem == 1) 
+    if (LCD_menu == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
     }
@@ -145,7 +149,7 @@ void drawMenu()
     lcd.print("< Tilbake");
    
     //******************//
-    if (menuItem == 2) 
+    if (LCD_menu == 2) 
     { 
       lcd.setTextColor(WHITE, BLACK);
     }
@@ -161,7 +165,7 @@ void drawMenu()
     lcd.print(">");
    
     //******************//
-    if (menuItem == 3) 
+    if (LCD_menu == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
     }
@@ -177,7 +181,7 @@ void drawMenu()
     lcd.print(">");
     
     //******************//
-    if (menuItem == 4) 
+    if (LCD_menu == 4) 
     { 
       lcd.setTextColor(WHITE, BLACK);
     }
@@ -199,58 +203,58 @@ void drawMenu()
 void navMenu() 
 {
   //Menu Navigation
-  if ((!digitalRead(BTN_C) && page == 1 && menuItem != 3) ||
-      (!digitalRead(BTN_C) && page == 2 && menuItem != 4)) 
+  if ((!digitalRead(BTN_C) && LCD_page== 1 && LCD_menu != 3) ||
+      (!digitalRead(BTN_C) && LCD_page== 2 && LCD_menu != 4)) 
   {
-    menuItem ++; //Moves down the menu
+    LCD_menu ++; //Moves down the menu
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_A) && menuItem != 1) 
+  else if (!digitalRead(BTN_A) && LCD_menu != 1) 
   {
-    menuItem --; //Moves up the menu
+    LCD_menu --; //Moves up the menu
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_B) && page == 1 && menuItem == 1) 
+  else if (!digitalRead(BTN_B) && LCD_page== 1 && LCD_menu == 1) 
   {
-    page = 2; //Changes to RGB Menu
+    LCD_page= 2; //Changes to RGB Menu
     drawMenu();
     delay(150);
   }
   
   //RGB CONTROL
-  else if (!digitalRead(BTN_B) && page == 2 && menuItem == 2) //Increase RGB_RED
+  else if (!digitalRead(BTN_B) && LCD_page== 2 && LCD_menu == 2) //Increase RGB_RED
   {
     rgbColor("red", 1);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_D) && page == 2 && menuItem == 2) //Decrease RGB_RED
+  else if (!digitalRead(BTN_D) && LCD_page== 2 && LCD_menu == 2) //Decrease RGB_RED
   {
     rgbColor("red", 0);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_B) && page == 2 && menuItem == 3) //Increase RGB_GREEN
+  else if (!digitalRead(BTN_B) && LCD_page== 2 && LCD_menu == 3) //Increase RGB_GREEN
   {
     rgbColor("green", 1);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_D) && page == 2 && menuItem == 3) //Decrease RGB_GREEN
+  else if (!digitalRead(BTN_D) && LCD_page== 2 && LCD_menu == 3) //Decrease RGB_GREEN
   {
     rgbColor("green", 0);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_B) && page == 2 && menuItem == 4) //Increase RGB_BLUE
+  else if (!digitalRead(BTN_B) && LCD_page== 2 && LCD_menu == 4) //Increase RGB_BLUE
   {
     rgbColor("blue", 1);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_D) && page == 2 && menuItem == 4) //Decrease RGB_BLUE
+  else if (!digitalRead(BTN_D) && LCD_page== 2 && LCD_menu == 4) //Decrease RGB_BLUE
   {
     rgbColor("blue", 0);
     drawMenu();
@@ -259,9 +263,9 @@ void navMenu()
   
   
   //Back button
-  else if ( !digitalRead(BTN_D) && page != 1 && menuItem == 1) 
+  else if ( !digitalRead(BTN_D) && LCD_page!= 1 && LCD_menu == 1) 
   {
-    page = 1; //Goes back to Main meny
+    LCD_page= 1; //Goes back to Main meny
     drawMenu();
     delay(150);
   }
@@ -308,5 +312,5 @@ void rgbColor(String color, bool increase)
 
 void rgbFlow()
 {
-  //FLOW DEM LIGHTS
+  
 }
