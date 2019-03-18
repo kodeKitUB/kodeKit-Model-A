@@ -10,6 +10,7 @@
 * LCD_page1 = Meny
 * LCD_page2 = RGB
 * LCD_page3 = Buzzer
+* LCD_page4 = Display
 *
 */
 
