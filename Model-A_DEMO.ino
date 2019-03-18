@@ -6,9 +6,11 @@
 */
 
 /*
+*
 * LCD_page1 = Meny
 * LCD_page2 = RGB
 * LCD_page3 = Buzzer
+*
 */
 
 
@@ -48,6 +50,7 @@ Adafruit_PCD8544 lcd = Adafruit_PCD8544(LCD_CLK, LCD_DIN, LCD_DC, LCD_CE, LCD_RS
 #define DHT A4
 
 int LCD_contrast = 60;
+int LCD_backlight = 0;
 int LCD_menuItem = 1;
 int LCD_page= 1;
 
@@ -55,7 +58,6 @@ int redVal = 0;
 int greenVal = 0;
 int blueVal = 0;
 bool flowOn = 0;
-
 
 void setup() 
 {
@@ -79,6 +81,7 @@ void setup()
 void loop() 
 {
   navMenu();
+  rgbFlow();
 }
 
 void drawMenu() 
@@ -130,7 +133,7 @@ void drawMenu()
     lcd.display();
   }
   
-/**************************************/
+  /**************************************/
   else if (LCD_page== 2) //RGB
   {
     lcd.setTextSize(1);
@@ -198,6 +201,7 @@ void drawMenu()
     lcd.display();
    
   }
+  
   /**************************************/
   else if (LCD_page == 3) //Buzzer menu
   {
@@ -226,9 +230,7 @@ void drawMenu()
       lcd.setTextColor(BLACK, WHITE);
     }
     lcd.setCursor(0, 10);
-    lcd.print("Mario");
-    lcd.setCursor(75, 10);
-    lcd.print(">");
+    lcd.print("Mario Theme");
    
     //******************//
     if (LCD_menuItem == 3) 
@@ -240,9 +242,7 @@ void drawMenu()
       lcd.setTextColor(BLACK, WHITE);
     }
     lcd.setCursor(0, 20);
-    lcd.print("Pirates");
-    lcd.setCursor(75, 20);
-    lcd.print(">");
+    lcd.print("Pirates theme");
     
     //******************//
     if (LCD_menuItem == 4) 
@@ -255,8 +255,54 @@ void drawMenu()
     }
     lcd.setCursor(0, 30);
     lcd.print("Crazy Frog");
-    lcd.setCursor(75, 30);
-    lcd.print(">");
+    lcd.display();
+  }
+  
+  /**************************************/
+  else if (LCD_page == 4) //Display menu
+  {
+    lcd.setTextSize(1);
+    lcd.clearDisplay();
+    
+    //******************//
+    if (LCD_menuItem == 1) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 0);
+    lcd.print("< Tilbake");
+   
+    //******************//
+    if (LCD_menuItem == 2) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 10);
+    lcd.print("Contrast");
+    lcd.setCursor(60, 10);
+    lcd.print(LCD_contrast);
+    
+    //******************//
+    if (LCD_menuItem == 3) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 20);
+    lcd.print("Backlight");
+    lcd.setCursor(60, 20);
+    lcd.print(LCD_backlight);
     lcd.display();
   }
 }
@@ -281,14 +327,18 @@ void navMenu()
   else if (!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 1) 
   {
     LCD_page = 2; //Changes to RGB Menu
-    LCD_menuItem = 1; //Sets selct to top
     drawMenu();
     delay(150);
   }
   else if (!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 2) 
   {
     LCD_page = 3; //Changes to Buzzer Menu
-    LCD_menuItem = 1; //Sets selct to top
+    drawMenu();
+    delay(150);
+  }
+  else if (!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 3) 
+  {
+    LCD_page = 4; //Changes to Display Menu
     drawMenu();
     delay(150);
   }
@@ -351,6 +401,32 @@ void navMenu()
     delay(150);
   }
   
+  //DISPLAY CONTROL
+  else if (!digitalRead(BTN_B) && LCD_page == 3 && LCD_menuItem == 2) //Increase Contrast
+  {
+    displayChange("contrast", 1);
+    drawMenu();
+    delay(2);
+  }
+  else if (!digitalRead(BTN_D) && LCD_page == 3 && LCD_menuItem == 2) //Decrease Contrast
+  {
+    displayChange("contrast", 0);
+    drawMenu();
+    delay(2);
+  }
+  else if (!digitalRead(BTN_B) && LCD_page == 3 && LCD_menuItem == 3) //Increase Backlight
+  {
+    displayChange("backlight", 1);
+    drawMenu();
+    delay(2);
+  }
+  else if (!digitalRead(BTN_D) && LCD_page == 3 && LCD_menuItem == 3) //Decrease Backlight
+  {
+    displayChange("backlight", 0);
+    drawMenu();
+    delay(2);
+  }
+  
   
   //Back button
   else if ( !digitalRead(BTN_D) && LCD_page != 1 && LCD_menuItem == 1) 
@@ -411,39 +487,95 @@ void playSong(String song)
   if (song == "Mario")
   {
     for (int thisNote = 0; thisNote < (sizeof(MarioUW_note)/sizeof(int)); thisNote++) {
+      
+      if (!digitalRead(BTN_A) || 
+      !digitalRead(BTN_B) ||
+      !digitalRead(BTN_C) ||
+      !digitalRead(BTN_D))
+      {
+        thisNote = 100;
+      }
 
-    int noteDuration = 1000 / MarioUW_duration[thisNote];//convert duration to time delay
-    tone(BUZZER, MarioUW_note[thisNote], noteDuration);
+      int noteDuration = 1000 / MarioUW_duration[thisNote];//convert duration to time delay
+      tone(BUZZER, MarioUW_note[thisNote], noteDuration);
 
-    int pauseBetweenNotes = noteDuration * 1.80;
-    delay(pauseBetweenNotes);
-    noTone(BUZZER); //stop music 
+      int pauseBetweenNotes = noteDuration * 1.80;
+      delay(pauseBetweenNotes);
+      noTone(BUZZER); //stop music on pin 8 
     }
   }
   
   if (song == "Pirates")
   {
     for (int thisNote = 0; thisNote < (sizeof(Pirates_note)/sizeof(int)); thisNote++) {
+      
+      if (!digitalRead(BTN_A) || 
+      !digitalRead(BTN_B) ||
+      !digitalRead(BTN_C) ||
+      !digitalRead(BTN_D))
+      {
+        thisNote = 100;
+      }
 
-    int noteDuration = 1000 / Pirates_duration[thisNote];//convert duration to time delay
-    tone(BUZZER, Pirates_note[thisNote], noteDuration);
+      int noteDuration = 1000 / Pirates_duration[thisNote];//convert duration to time delay
+      tone(BUZZER, Pirates_note[thisNote], noteDuration);
 
-    int pauseBetweenNotes = noteDuration * 1.05; //Here 1.05 is tempo, increase to play it slower
-    delay(pauseBetweenNotes);
-    noTone(BUZZER); //stop music
+      int pauseBetweenNotes = noteDuration * 1.05; //Here 1.05 is tempo, increase to play it slower
+      delay(pauseBetweenNotes);
+      noTone(BUZZER); //stop music on pin 4
     }
   }
   
   if (song == "Crazy")
   {
     for (int thisNote = 0; thisNote < (sizeof(CrazyFrog_note)/sizeof(int)); thisNote++) {
+      
+      if (!digitalRead(BTN_A) || 
+      !digitalRead(BTN_B) ||
+      !digitalRead(BTN_C) ||
+      !digitalRead(BTN_D))
+      {
+        thisNote = 100;
+      }
+    
+      int noteDuration = 1000 / CrazyFrog_duration[thisNote]; //convert duration to time delay
+      tone(BUZZER, CrazyFrog_note[thisNote], noteDuration);
 
-    int noteDuration = 1000 / CrazyFrog_duration[thisNote]; //convert duration to time delay
-    tone(BUZZER, CrazyFrog_note[thisNote], noteDuration);
-
-    int pauseBetweenNotes = noteDuration * 1.30;//Here 1.30 is tempo, decrease to play it faster
-    delay(pauseBetweenNotes);
-    noTone(BUZZER); //stop music 
+      int pauseBetweenNotes = noteDuration * 1.30;//Here 1.30 is tempo, decrease to play it faster
+      delay(pauseBetweenNotes);
+      noTone(BUZZER);
     }
+  }
+}
+
+void rgbFlow()
+{
+  if (flowOn)
+  {
+    //DO SOMETHING
+  }
+}
+
+void displayChange(String setting, bool increase)
+{
+  if (setting == "contrast" && increase && LCD_contrast < 100)
+  {
+    LCD_contrast ++;
+    lcd.display();
+  }
+  if (setting == "contrast" && !increase && LCD_contrast > 0)
+  {
+    LCD_contrast --;
+    lcd.display();
+  }
+  if (setting == "backlight" && increase && LCD_backlight < 170)
+  {
+    LCD_backlight ++;
+    lcd.display();
+  }
+  if (setting == "backlight" && !increase && LCD_backlight > 0)
+  {
+    LCD_backlight --;
+    lcd.display();
   }
 }
