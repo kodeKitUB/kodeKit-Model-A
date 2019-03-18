@@ -10,7 +10,6 @@
 * LCD_page1 = Meny
 * LCD_page2 = RGB
 * LCD_page3 = Buzzer
-* LCD_page4 = Display
 *
 */
 
@@ -440,35 +439,35 @@ void navMenu()
 
 void rgbColor(String color, bool increase)
 {
-  if (color == "red" && increase && redVal != 255 )
+  if (color == "red" && increase && redVal < 255 )
   {
     flowOn = 0;
     redVal ++;
     analogWrite(RGB_RED, redVal);
   }
   
-  if (color == "red" && !increase && redVal != 0 )
+  if (color == "red" && !increase && redVal > 0 )
   {
     flowOn = 0;
     redVal --;
     analogWrite(RGB_RED, redVal);
   }
   
-    if (color == "green" && increase && greenVal != 255 )
+  if (color == "green" && increase && greenVal < 255 )
   {
     flowOn = 0;
     greenVal ++;
     analogWrite(RGB_GREEN, greenVal);
   }
   
-  if (color == "green" && !increase && greenVal != 0 )
+  if (color == "green" && !increase && greenVal > 0 )
   {
     flowOn = 0;
     greenVal --;
     analogWrite(RGB_GREEN, greenVal);
   }
   
-    if (color == "blue" && increase && blueVal != 255 )
+  if (color == "blue" && increase && blueVal < 255 )
   {
     flowOn = 0;
     blueVal ++;
@@ -562,21 +561,21 @@ void displayChange(String setting, bool increase)
   if (setting == "contrast" && increase && LCD_contrast < 100)
   {
     LCD_contrast ++;
-    lcd.display();
+    lcd.setContrast(LCD_contrast);
   }
   if (setting == "contrast" && !increase && LCD_contrast > 0)
   {
     LCD_contrast --;
-    lcd.display();
+    lcd.setContrast(LCD_contrast);
   }
   if (setting == "backlight" && increase && LCD_backlight < 170)
   {
     LCD_backlight ++;
-    lcd.display();
+    analogWrite(LCD_BL, LCD_backlight);
   }
   if (setting == "backlight" && !increase && LCD_backlight > 0)
   {
     LCD_backlight --;
-    lcd.display();
+    analogWrite(LCD_BL, LCD_backlight);
   }
 }
