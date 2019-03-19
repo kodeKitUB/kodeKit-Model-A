@@ -104,10 +104,12 @@ void loop()
   temp = dht.getTemperatureC();
   humi = dht.getHumidity();
   
-  //Read sound value
-  soundValue = analogRead(SOUND);
+  //Read sound value, and sets the default sound value
+  if (digitalRead(SOUND))
+  {
+    clapCount ++;
+  }
  
-    
   navMenu();
   rgbFlow();
   drawMenu();
@@ -511,9 +513,9 @@ void drawMenu()
       lcd.setTextColor(BLACK, WHITE);
     }
     lcd.setCursor(18, 15);
-    lcd.print("Lyd Verdi");
+    lcd.print("Claps");
     lcd.setCursor(35, 25);
-    lcd.print(soundValue);
+    lcd.print(clapCount);
     lcd.display();
   }
 }
