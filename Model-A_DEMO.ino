@@ -10,10 +10,12 @@
 * LCD_page1 = Meny
 * LCD_page2 = RGB
 * LCD_page3 = Buzzer
+* LCD_page10 = Meny Scrolled
 *
 */
 
 
+#include <TroykaDHT.h>
 #include <pitches.h>
 #include <themes.h>
 #include <Adafruit_GFX.h>
@@ -46,18 +48,29 @@ Adafruit_PCD8544 lcd = Adafruit_PCD8544(LCD_CLK, LCD_DIN, LCD_DC, LCD_CE, LCD_RS
 #define BUZZER A5
 
 //Sesnor pins
-#define SOUND A3
-#define DHT A4
+#define SOUND A4
+#define DHTPIN A3
+
+DHT dht(DHTPIN, DHT11);
 
 int LCD_contrast = 60;
-int LCD_backlight = 0;
+int LCD_backlight = 100;
 int LCD_menuItem = 1;
-int LCD_page= 1;
+int LCD_page = 1;
+int LCD_lastMenuItem = 1;
+int LCD_lastPage = 1;
 
 int redVal = 0;
 int greenVal = 0;
 int blueVal = 0;
 bool flowOn = 0;
+
+float humi = dht.getHumidity();
+float temp = dht.getTemperatureC();
+
+int soundValue = 0;
+int soundDefault = 0;
+int clapCount = 0;
 
 void setup() 
 {
@@ -66,7 +79,9 @@ void setup()
   pinMode(BTN_B, INPUT_PULLUP);
   pinMode(BTN_C, INPUT_PULLUP);
   pinMode(BTN_D, INPUT_PULLUP);
+  pinMode(SOUND, INPUT_PULLUP);
   pinMode(LCD_BL, OUTPUT);
+  analogWrite(LCD_BL, LCD_backlight);
   
   Serial.begin(9600);
   
@@ -76,17 +91,31 @@ void setup()
   lcd.clearDisplay(); 
   lcd.display();
   drawMenu();
+  
+  //Sensor setup
+  dht.begin();
+
 }
 
 void loop() 
 {
+  //Reads Temprature and Humodity
+  dht.read();
+  temp = dht.getTemperatureC();
+  humi = dht.getHumidity();
+  
+  //Read sound value
+  soundValue = analogRead(SOUND);
+ 
+    
   navMenu();
   rgbFlow();
+  drawMenu();
 }
 
 void drawMenu() 
 {
-  if (LCD_page== 1) //Meny
+  if (LCD_page == 1) //Meny
   {    
     lcd.setTextSize(1);
     lcd.clearDisplay();
@@ -130,6 +159,102 @@ void drawMenu()
     }  
     lcd.setCursor(0, 35);
     lcd.print("> Display");
+    lcd.display();
+  }
+
+/**************************************/  
+  if (LCD_page == 10) //Meny2
+  {    
+    lcd.setTextSize(1);
+    lcd.clearDisplay();
+    lcd.setTextColor(BLACK, WHITE);
+    lcd.setCursor(30, 0);
+    lcd.print("MENY");
+    lcd.drawFastHLine(0,10,83,BLACK);
+   
+    //******************//
+    if (LCD_menuItem == 1) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 15);
+    lcd.print("> Buzzer");
+   
+    //******************//   
+    if (LCD_menuItem == 2) 
+    {
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 25);
+    lcd.print("> Display");
+    
+    //******************//
+    if (LCD_menuItem == 3) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }  
+    lcd.setCursor(0, 35);
+    lcd.print("> Temp Sensor");
+    lcd.display();
+  }
+  
+/**************************************/  
+  if (LCD_page == 20) //Meny3
+  {    
+    lcd.setTextSize(1);
+    lcd.clearDisplay();
+    lcd.setTextColor(BLACK, WHITE);
+    lcd.setCursor(30, 0);
+    lcd.print("MENY");
+    lcd.drawFastHLine(0,10,83,BLACK);
+   
+    //******************//
+    if (LCD_menuItem == 1) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 15);
+    lcd.print("> Display");
+   
+    //******************//   
+    if (LCD_menuItem == 2) 
+    {
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 25);
+    lcd.print("> Temp Sensor");
+    
+    //******************//
+    if (LCD_menuItem == 3) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }  
+    lcd.setCursor(0, 35);
+    lcd.print("> Lyd Sensor");
     lcd.display();
   }
   
@@ -305,6 +430,92 @@ void drawMenu()
     lcd.print(LCD_backlight);
     lcd.display();
   }
+  
+  /**************************************/
+  else if (LCD_page == 5) //Temp meny
+  {
+    lcd.setTextSize(1);
+    lcd.clearDisplay();
+    
+    //******************//
+    if (LCD_menuItem == 1) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 0);
+    lcd.print("< Tilbake");
+   
+    //******************//
+    if (LCD_menuItem == 2) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 15);
+    lcd.print("Temp:");
+    lcd.setCursor(36, 15);
+    lcd.print(temp);
+    lcd.setCursor(66, 15);
+    lcd.print("C");
+    
+    //******************//
+    if (LCD_menuItem == 3) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 25);
+    lcd.print("Fukt:");
+    lcd.setCursor(36, 25);
+    lcd.print(humi);
+    lcd.setCursor(66, 25);
+    lcd.print("%");
+    lcd.display();
+  }
+  
+  /**************************************/
+  else if (LCD_page == 6) //Lyd meny
+  {
+    lcd.setTextSize(1);
+    lcd.clearDisplay();
+    
+    //******************//
+    if (LCD_menuItem == 1) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(0, 0);
+    lcd.print("< Tilbake");
+   
+    //******************//
+    if (LCD_menuItem == 2) 
+    { 
+      lcd.setTextColor(WHITE, BLACK);
+    }
+    else 
+    {
+      lcd.setTextColor(BLACK, WHITE);
+    }
+    lcd.setCursor(18, 15);
+    lcd.print("Lyd Verdi");
+    lcd.setCursor(35, 25);
+    lcd.print(soundValue);
+    lcd.display();
+  }
 }
 
 void navMenu() 
@@ -312,7 +523,12 @@ void navMenu()
   //Menu Navigation
   if ((!digitalRead(BTN_C) && LCD_page == 1 && LCD_menuItem != 3) ||
       (!digitalRead(BTN_C) && LCD_page == 2 && LCD_menuItem != 4) ||
-      (!digitalRead(BTN_C) && LCD_page == 3 && LCD_menuItem != 4))
+      (!digitalRead(BTN_C) && LCD_page == 3 && LCD_menuItem != 4) ||
+      (!digitalRead(BTN_C) && LCD_page == 4 && LCD_menuItem != 3) ||
+      (!digitalRead(BTN_C) && LCD_page == 5 && LCD_menuItem != 1) ||
+      (!digitalRead(BTN_C) && LCD_page == 6 && LCD_menuItem != 1) ||
+      (!digitalRead(BTN_C) && LCD_page == 10 && LCD_menuItem != 3) ||
+      (!digitalRead(BTN_C) && LCD_page == 20 && LCD_menuItem != 3))
   {
     LCD_menuItem ++; //Moves down the menu
     drawMenu();
@@ -326,19 +542,80 @@ void navMenu()
   }
   else if (!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 1) 
   {
+    LCD_lastMenuItem = LCD_menuItem;
+    LCD_lastPage = LCD_page;
+    
     LCD_page = 2; //Changes to RGB Menu
+    LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 2) 
+  else if ((!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 2) ||
+           (!digitalRead(BTN_B) && LCD_page == 10 && LCD_menuItem == 1)) 
   {
+    LCD_lastMenuItem = LCD_menuItem;
+    LCD_lastPage = LCD_page;
+    
     LCD_page = 3; //Changes to Buzzer Menu
+    LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 3) 
+  else if ((!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 3) ||
+           (!digitalRead(BTN_B) && LCD_page == 10 && LCD_menuItem == 2) ||
+           (!digitalRead(BTN_B) && LCD_page == 20 && LCD_menuItem == 1)) 
   {
+    LCD_lastMenuItem = LCD_menuItem;
+    LCD_lastPage = LCD_page;
+    
     LCD_page = 4; //Changes to Display Menu
+    LCD_menuItem = 1;
+    drawMenu();
+    delay(150);
+  }
+  else if ((!digitalRead(BTN_B) && LCD_page == 10 && LCD_menuItem == 3) ||
+           (!digitalRead(BTN_B) && LCD_page == 20 && LCD_menuItem == 2)) 
+  {
+    LCD_lastMenuItem = LCD_menuItem;
+    LCD_lastPage = LCD_page;
+    
+    LCD_page = 5; //Changes to Temp Menu
+    LCD_menuItem = 1;
+    drawMenu();
+    delay(150);
+  }
+  else if (!digitalRead(BTN_B) && LCD_page == 20 && LCD_menuItem == 3) 
+  {
+    LCD_lastMenuItem = LCD_menuItem;
+    LCD_lastPage = LCD_page;
+    
+    LCD_page = 6; //Changes to Lyd Menu
+    LCD_menuItem = 1;
+    drawMenu();
+    delay(150);
+  }
+  
+  else if (!digitalRead(BTN_C) && LCD_page == 1 && LCD_menuItem == 3) 
+  {
+    LCD_page = 10; //Scrolls down
+    drawMenu();
+    delay(150);
+  }
+  else if (!digitalRead(BTN_C) && LCD_page == 10 && LCD_menuItem == 3) 
+  {
+    LCD_page = 20; //Scrolls down
+    drawMenu();
+    delay(150);
+  }
+  else if (!digitalRead(BTN_A) && LCD_page == 10 && LCD_menuItem == 1) 
+  {
+    LCD_page = 1; //Scrolls up
+    drawMenu();
+    delay(150);
+  }
+  else if (!digitalRead(BTN_A) && LCD_page == 20 && LCD_menuItem == 1) 
+  {
+    LCD_page = 10; //Scrolls up
     drawMenu();
     delay(150);
   }
@@ -402,36 +679,36 @@ void navMenu()
   }
   
   //DISPLAY CONTROL
-  else if (!digitalRead(BTN_B) && LCD_page == 3 && LCD_menuItem == 2) //Increase Contrast
+  else if (!digitalRead(BTN_B) && LCD_page == 4 && LCD_menuItem == 2) //Increase Contrast
   {
     displayChange("contrast", 1);
     drawMenu();
     delay(2);
   }
-  else if (!digitalRead(BTN_D) && LCD_page == 3 && LCD_menuItem == 2) //Decrease Contrast
+  else if (!digitalRead(BTN_D) && LCD_page == 4 && LCD_menuItem == 2) //Decrease Contrast
   {
     displayChange("contrast", 0);
     drawMenu();
     delay(2);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 3 && LCD_menuItem == 3) //Increase Backlight
+  else if (!digitalRead(BTN_B) && LCD_page == 4 && LCD_menuItem == 3) //Increase Backlight
   {
     displayChange("backlight", 1);
     drawMenu();
     delay(2);
   }
-  else if (!digitalRead(BTN_D) && LCD_page == 3 && LCD_menuItem == 3) //Decrease Backlight
+  else if (!digitalRead(BTN_D) && LCD_page == 4 && LCD_menuItem == 3) //Decrease Backlight
   {
     displayChange("backlight", 0);
     drawMenu();
     delay(2);
   }
   
-  
   //Back button
   else if ( !digitalRead(BTN_D) && LCD_page != 1 && LCD_menuItem == 1) 
   {
-    LCD_page = 1; //Goes back to Main meny
+    LCD_menuItem = LCD_lastMenuItem; //Goes back to Main meny
+    LCD_page = LCD_lastPage;
     drawMenu();
     delay(150);
   }
@@ -488,19 +765,20 @@ void playSong(String song)
   {
     for (int thisNote = 0; thisNote < (sizeof(MarioUW_note)/sizeof(int)); thisNote++) {
       
-      if (!digitalRead(BTN_A) || 
-      !digitalRead(BTN_B) ||
-      !digitalRead(BTN_C) ||
-      !digitalRead(BTN_D))
-      {
-        thisNote = 100;
-      }
-
       int noteDuration = 1000 / MarioUW_duration[thisNote];//convert duration to time delay
       tone(BUZZER, MarioUW_note[thisNote], noteDuration);
 
       int pauseBetweenNotes = noteDuration * 1.80;
       delay(pauseBetweenNotes);
+      
+      if (!digitalRead(BTN_A) || 
+          !digitalRead(BTN_B) ||
+          !digitalRead(BTN_C) ||
+          !digitalRead(BTN_D))
+      {
+        thisNote = 100;
+      }
+      
       noTone(BUZZER); //stop music on pin 8 
     }
   }
@@ -508,20 +786,21 @@ void playSong(String song)
   if (song == "Pirates")
   {
     for (int thisNote = 0; thisNote < (sizeof(Pirates_note)/sizeof(int)); thisNote++) {
-      
-      if (!digitalRead(BTN_A) || 
-      !digitalRead(BTN_B) ||
-      !digitalRead(BTN_C) ||
-      !digitalRead(BTN_D))
-      {
-        thisNote = 100;
-      }
-
+  
       int noteDuration = 1000 / Pirates_duration[thisNote];//convert duration to time delay
       tone(BUZZER, Pirates_note[thisNote], noteDuration);
 
       int pauseBetweenNotes = noteDuration * 1.05; //Here 1.05 is tempo, increase to play it slower
       delay(pauseBetweenNotes);
+      
+      if (!digitalRead(BTN_A) || 
+          !digitalRead(BTN_B) ||
+          !digitalRead(BTN_C) ||
+          !digitalRead(BTN_D))
+      {
+        thisNote = 100;
+      }
+      
       noTone(BUZZER); //stop music on pin 4
     }
   }
@@ -529,20 +808,21 @@ void playSong(String song)
   if (song == "Crazy")
   {
     for (int thisNote = 0; thisNote < (sizeof(CrazyFrog_note)/sizeof(int)); thisNote++) {
-      
-      if (!digitalRead(BTN_A) || 
-      !digitalRead(BTN_B) ||
-      !digitalRead(BTN_C) ||
-      !digitalRead(BTN_D))
-      {
-        thisNote = 100;
-      }
     
       int noteDuration = 1000 / CrazyFrog_duration[thisNote]; //convert duration to time delay
       tone(BUZZER, CrazyFrog_note[thisNote], noteDuration);
 
       int pauseBetweenNotes = noteDuration * 1.30;//Here 1.30 is tempo, decrease to play it faster
       delay(pauseBetweenNotes);
+      
+      if (!digitalRead(BTN_A) || 
+          !digitalRead(BTN_B) ||
+          !digitalRead(BTN_C) ||
+          !digitalRead(BTN_D))
+      {
+        thisNote = 100;
+      }
+      
       noTone(BUZZER);
     }
   }
