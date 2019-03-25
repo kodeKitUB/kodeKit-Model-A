@@ -151,7 +151,8 @@ void loop()
 
 void drawMenu() 
 {
-  if (LCD_page == 1) //Meny
+  //HOVED MENY_1
+  if (LCD_page == 1)
   {    
     lcd.setTextSize(1);
     lcd.clearDisplay();
@@ -160,7 +161,6 @@ void drawMenu()
     lcd.print("MENY");
     lcd.drawFastHLine(0,10,83,BLACK);
    
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -172,7 +172,6 @@ void drawMenu()
     lcd.setCursor(0, 15);
     lcd.print("> RGB Lys");
    
-    //******************//   
     if (LCD_menuItem == 2) 
     {
       lcd.setTextColor(WHITE, BLACK);
@@ -184,7 +183,6 @@ void drawMenu()
     lcd.setCursor(0, 25);
     lcd.print("> Buzzer");
     
-    //******************//
     if (LCD_menuItem == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -198,8 +196,8 @@ void drawMenu()
     lcd.display();
   }
 
-/**************************************/  
-  if (LCD_page == 10) //Meny2
+  //HOVED MENY_2 (After one scroll)
+  if (LCD_page == 10)
   {    
     lcd.setTextSize(1);
     lcd.clearDisplay();
@@ -208,7 +206,6 @@ void drawMenu()
     lcd.print("MENY");
     lcd.drawFastHLine(0,10,83,BLACK);
    
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -220,7 +217,6 @@ void drawMenu()
     lcd.setCursor(0, 15);
     lcd.print("> Buzzer");
    
-    //******************//   
     if (LCD_menuItem == 2) 
     {
       lcd.setTextColor(WHITE, BLACK);
@@ -232,7 +228,6 @@ void drawMenu()
     lcd.setCursor(0, 25);
     lcd.print("> Display");
     
-    //******************//
     if (LCD_menuItem == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -246,8 +241,8 @@ void drawMenu()
     lcd.display();
   }
   
-/**************************************/  
-  if (LCD_page == 20) //Meny3
+  //HOVED MENY_3 (After two scroll) 
+  if (LCD_page == 20)
   {    
     lcd.setTextSize(1);
     lcd.clearDisplay();
@@ -256,7 +251,6 @@ void drawMenu()
     lcd.print("MENY");
     lcd.drawFastHLine(0,10,83,BLACK);
    
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -268,7 +262,6 @@ void drawMenu()
     lcd.setCursor(0, 15);
     lcd.print("> Display");
    
-    //******************//   
     if (LCD_menuItem == 2) 
     {
       lcd.setTextColor(WHITE, BLACK);
@@ -280,7 +273,6 @@ void drawMenu()
     lcd.setCursor(0, 25);
     lcd.print("> Temp Sensor");
     
-    //******************//
     if (LCD_menuItem == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -294,13 +286,12 @@ void drawMenu()
     lcd.display();
   }
   
-  /**************************************/
-  else if (LCD_page== 2) //RGB
+  //RGB MENY
+  if (LCD_page== 2)
   {
     lcd.setTextSize(1);
     lcd.clearDisplay();
     
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -312,7 +303,6 @@ void drawMenu()
     lcd.setCursor(0, 0);
     lcd.print("< Tilbake");
    
-    //******************//
     if (LCD_menuItem == 2) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -328,7 +318,6 @@ void drawMenu()
     lcd.setCursor(37, 10);
     lcd.print(">");
    
-    //******************//
     if (LCD_menuItem == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -344,7 +333,6 @@ void drawMenu()
     lcd.setCursor(37, 20);
     lcd.print(">");
     
-    //******************//
     if (LCD_menuItem == 4) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -363,13 +351,12 @@ void drawMenu()
    
   }
   
-  /**************************************/
-  else if (LCD_page == 3) //BUZZER_S menu
+  //BUZZER MENY
+  if (LCD_page == 3)
   {
     lcd.setTextSize(1);
     lcd.clearDisplay();
     
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -381,7 +368,6 @@ void drawMenu()
     lcd.setCursor(0, 0);
     lcd.print("< Tilbake");
    
-    //******************//
     if (LCD_menuItem == 2) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -393,7 +379,6 @@ void drawMenu()
     lcd.setCursor(0, 10);
     lcd.print("Mario Theme");
    
-    //******************//
     if (LCD_menuItem == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -405,7 +390,6 @@ void drawMenu()
     lcd.setCursor(0, 20);
     lcd.print("Pirates Theme");
     
-    //******************//
     if (LCD_menuItem == 4) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -419,13 +403,12 @@ void drawMenu()
     lcd.display();
   }
   
-  /**************************************/
-  else if (LCD_page == 4) //Display menu
+  //DISPLAY MENY
+  if (LCD_page == 4)
   {
     lcd.setTextSize(1);
     lcd.clearDisplay();
     
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -437,7 +420,6 @@ void drawMenu()
     lcd.setCursor(0, 0);
     lcd.print("< Tilbake");
    
-    //******************//
     if (LCD_menuItem == 2) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -451,7 +433,6 @@ void drawMenu()
     lcd.setCursor(60, 10);
     lcd.print(LCD_contrast);
     
-    //******************//
     if (LCD_menuItem == 3) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -468,13 +449,12 @@ void drawMenu()
     lcd.display();
   }
   
-  /**************************************/
-  else if (LCD_page == 5) //Temp meny
+  //TEMPRATUR MENY
+  if (LCD_page == 5)
   {
     lcd.setTextSize(1);
     lcd.clearDisplay();
     
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -486,15 +466,7 @@ void drawMenu()
     lcd.setCursor(0, 0);
     lcd.print("< Tilbake");
    
-    //******************//
-    if (LCD_menuItem == 2) 
-    { 
-      lcd.setTextColor(WHITE, BLACK);
-    }
-    else 
-    {
-      lcd.setTextColor(BLACK, WHITE);
-    }
+    lcd.setTextColor(BLACK, WHITE);
     lcd.setCursor(0, 15);
     lcd.print("Temp:");
     lcd.setCursor(36, 15);
@@ -502,15 +474,6 @@ void drawMenu()
     lcd.setCursor(66, 15);
     lcd.print("C");
     
-    //******************//
-    if (LCD_menuItem == 3) 
-    { 
-      lcd.setTextColor(WHITE, BLACK);
-    }
-    else 
-    {
-      lcd.setTextColor(BLACK, WHITE);
-    }
     lcd.setCursor(0, 25);
     lcd.print("Fukt:");
     lcd.setCursor(36, 25);
@@ -520,13 +483,12 @@ void drawMenu()
     lcd.display();
   }
   
-  /**************************************/
-  else if (LCD_page == 6) //Lyd meny
+  //LYD MENY
+  if (LCD_page == 6)
   {
     lcd.setTextSize(1);
     lcd.clearDisplay();
     
-    //******************//
     if (LCD_menuItem == 1) 
     { 
       lcd.setTextColor(WHITE, BLACK);
@@ -535,18 +497,11 @@ void drawMenu()
     {
       lcd.setTextColor(BLACK, WHITE);
     }
+    
     lcd.setCursor(0, 0);
     lcd.print("< Tilbake");
    
-    //******************//
-    if (LCD_menuItem == 2) 
-    { 
-      lcd.setTextColor(WHITE, BLACK);
-    }
-    else 
-    {
-      lcd.setTextColor(BLACK, WHITE);
-    }
+    lcd.setTextColor(BLACK, WHITE);
     lcd.setCursor(18, 15);
     lcd.print("Teller");
     lcd.setCursor(35, 25);
