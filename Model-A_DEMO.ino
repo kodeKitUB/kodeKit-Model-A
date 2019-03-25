@@ -2,15 +2,12 @@
 *
 * Official code for kodeKit NM Demo
 * Created by Augustin Winther 
-*
+* NOTE!
+* D3 PWM is disabled when using the tone();
 */
 
 /*
 *
-* LCD_page1 = Meny
-* LCD_page2 = RGB
-* LCD_page3 = Buzzer
-* LCD_page10 = Meny Scrolled
 *
 */
 
@@ -22,36 +19,36 @@
 #include <Adafruit_PCD8544.h>
 
 //LCD Pins
-#define LCD_RST 2
+#define LCD_RST 7
 #define LCD_CE NULL
 #define LCD_DC 3
-#define LCD_DIN 4
-#define LCD_CLK 5
+#define LCD_DIN 5
+#define LCD_CLK 4
 #define LCD_BL 6
 Adafruit_PCD8544 lcd = Adafruit_PCD8544(LCD_CLK, LCD_DIN, LCD_DC, LCD_CE, LCD_RST);
 
 //Joystick Pins
-#define BTN_A 7
-#define BTN_B 8
-#define BTN_C 12
-#define BTN_D 13
-#define JOY_K A0
-#define JOY_X A1
-#define JOY_Y A2
+#define JOY_A 12
+#define JOY_B 13
+#define JOY_C A0
+#define JOY_D A1
+#define JOY_K A2
+#define JOY_X A3
+#define JOY_Y A4
 
 //RGB Pins
-#define RGB_BLUE 9
-#define RGB_GREEN 10
-#define RGB_RED 11
+#define RGB_R 9
+#define RGB_G 10
+#define RGB_B 11
 
-//Buzzer Pin
-#define BUZZER A5
+//BUZZER_S Pin
+#define BUZZER_S 8
 
 //Sesnor pins
-#define SOUND A4
-#define DHTPIN A3
+#define LYD_DO 2
+#define DHT_OUT A5
 
-DHT dht(DHTPIN, DHT11);
+DHT dht(DHT_OUT, DHT11);
 
 int LCD_contrast = 60;
 int LCD_backlight = 100;
@@ -68,26 +65,90 @@ bool flowOn = 0;
 float humi = dht.getHumidity();
 float temp = dht.getTemperatureC();
 
-int soundValue = 0;
-int soundDefault = 0;
 int clapCount = 0;
+bool clapEnabled = 0;
+unsigned long prevMillis = 0;
+unsigned long currMillis = 0;
+
+int randInt = 0;
+int oldRand = 0;
+
+const uint8_t PROGMEM kodekitLogo[] = { 
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000111,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00011000,B11000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B01100000,B00110000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000001,B10000000,B00001100,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000110,B00000000,B00000011,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00011000,B00000000,B00000000,B11000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B01100000,B00000000,B00000000,B00110000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B01100000,B00000000,B00000000,B00110000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B01011000,B00000000,B00000000,B11010001,B00000000,B00000000,B00010000,B00000010,B00010010,B00000000,B00000000,
+B01000110,B00000000,B00000011,B00010001,B00000000,B00000000,B00010000,B00000010,B00110010,B01000000,B00000000,
+B01000001,B10000000,B00001100,B00010001,B00000000,B00000000,B00010000,B00000010,B00100000,B01000000,B00000000,
+B01000000,B01100000,B00110001,B10010001,B00010001,B11000001,B11110001,B11000010,B01000010,B01110000,B00000000,
+B01000000,B10011000,B11000001,B10010001,B00100010,B00100011,B00010010,B00100010,B10000010,B01000000,B00000000,
+B01000000,B10000111,B00000000,B10010001,B01000010,B00100010,B00010010,B00100011,B10000010,B01000000,B00000000,
+B01011101,B10000010,B00010000,B11010001,B11000010,B00100010,B00010011,B11100010,B10000010,B01000000,B00000000,
+B01010001,B00000010,B00100000,B01010001,B01100010,B00100010,B00010010,B00000010,B01000010,B01000000,B00000000,
+B01001001,B01000010,B00100000,B10010001,B00100010,B00100010,B00010010,B00000010,B00100010,B01000000,B00000000,
+B01000101,B00100010,B00100000,B10010001,B00010010,B00100011,B00010010,B00100010,B00110010,B01100000,B00000000,
+B01000001,B00010010,B01100000,B10010001,B00011001,B11000001,B11110001,B11000010,B00010010,B00110000,B00000000,
+B01000001,B01110010,B01100000,B10010000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000111,B11100000,
+B01100011,B01000010,B00100001,B00110000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00011000,B00000010,B00110000,B11000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000110,B00000010,B00010011,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000001,B10000010,B00001100,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B01100010,B00110000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00011010,B11000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000111,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
+};
 
 void setup() 
 {
   //Pin setup
-  pinMode(BTN_A, INPUT_PULLUP);
-  pinMode(BTN_B, INPUT_PULLUP);
-  pinMode(BTN_C, INPUT_PULLUP);
-  pinMode(BTN_D, INPUT_PULLUP);
-  pinMode(SOUND, INPUT_PULLUP);
+  pinMode(JOY_A, INPUT_PULLUP);
+  pinMode(JOY_B, INPUT_PULLUP);
+  pinMode(JOY_C, INPUT_PULLUP);
+  pinMode(JOY_D, INPUT_PULLUP);
   pinMode(LCD_BL, OUTPUT);
   analogWrite(LCD_BL, LCD_backlight);
+  
+  pinMode(LYD_DO, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(LYD_DO), clapIncr, CHANGE);
   
   Serial.begin(9600);
   
   //Display Setup
   lcd.begin();      
   lcd.setContrast(LCD_contrast);
+  
+  lcd.clearDisplay();
+  lcd.drawBitmap(0,0, kodekitLogo, 84, 48, 1);
+  lcd.display();
+  
+  delay(4000);
+  
   lcd.clearDisplay(); 
   lcd.display();
   drawMenu();
@@ -104,12 +165,6 @@ void loop()
   temp = dht.getTemperatureC();
   humi = dht.getHumidity();
   
-  //Read sound value, and sets the default sound value
-  if (digitalRead(SOUND))
-  {
-    clapCount ++;
-  }
- 
   navMenu();
   rgbFlow();
   drawMenu();
@@ -330,7 +385,7 @@ void drawMenu()
   }
   
   /**************************************/
-  else if (LCD_page == 3) //Buzzer menu
+  else if (LCD_page == 3) //BUZZER_S menu
   {
     lcd.setTextSize(1);
     lcd.clearDisplay();
@@ -513,7 +568,7 @@ void drawMenu()
       lcd.setTextColor(BLACK, WHITE);
     }
     lcd.setCursor(18, 15);
-    lcd.print("Claps");
+    lcd.print("Teller");
     lcd.setCursor(35, 25);
     lcd.print(clapCount);
     lcd.display();
@@ -523,26 +578,26 @@ void drawMenu()
 void navMenu() 
 {
   //Menu Navigation
-  if ((!digitalRead(BTN_C) && LCD_page == 1 && LCD_menuItem != 3) ||
-      (!digitalRead(BTN_C) && LCD_page == 2 && LCD_menuItem != 4) ||
-      (!digitalRead(BTN_C) && LCD_page == 3 && LCD_menuItem != 4) ||
-      (!digitalRead(BTN_C) && LCD_page == 4 && LCD_menuItem != 3) ||
-      (!digitalRead(BTN_C) && LCD_page == 5 && LCD_menuItem != 1) ||
-      (!digitalRead(BTN_C) && LCD_page == 6 && LCD_menuItem != 1) ||
-      (!digitalRead(BTN_C) && LCD_page == 10 && LCD_menuItem != 3) ||
-      (!digitalRead(BTN_C) && LCD_page == 20 && LCD_menuItem != 3))
+  if ((!digitalRead(JOY_C) && LCD_page == 1 && LCD_menuItem != 3) ||
+      (!digitalRead(JOY_C) && LCD_page == 2 && LCD_menuItem != 4) ||
+      (!digitalRead(JOY_C) && LCD_page == 3 && LCD_menuItem != 4) ||
+      (!digitalRead(JOY_C) && LCD_page == 4 && LCD_menuItem != 3) ||
+      (!digitalRead(JOY_C) && LCD_page == 5 && LCD_menuItem != 1) ||
+      (!digitalRead(JOY_C) && LCD_page == 6 && LCD_menuItem != 1) ||
+      (!digitalRead(JOY_C) && LCD_page == 10 && LCD_menuItem != 3) ||
+      (!digitalRead(JOY_C) && LCD_page == 20 && LCD_menuItem != 3))
   {
     LCD_menuItem ++; //Moves down the menu
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_A) && LCD_menuItem != 1) 
+  else if (!digitalRead(JOY_A) && LCD_menuItem != 1) 
   {
     LCD_menuItem --; //Moves up the menu
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 1) 
+  else if (!digitalRead(JOY_B) && LCD_page == 1 && LCD_menuItem == 1) 
   {
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
@@ -552,20 +607,20 @@ void navMenu()
     drawMenu();
     delay(150);
   }
-  else if ((!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 2) ||
-           (!digitalRead(BTN_B) && LCD_page == 10 && LCD_menuItem == 1)) 
+  else if ((!digitalRead(JOY_B) && LCD_page == 1 && LCD_menuItem == 2) ||
+           (!digitalRead(JOY_B) && LCD_page == 10 && LCD_menuItem == 1)) 
   {
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
     
-    LCD_page = 3; //Changes to Buzzer Menu
+    LCD_page = 3; //Changes to BUZZER_S Menu
     LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
-  else if ((!digitalRead(BTN_B) && LCD_page == 1 && LCD_menuItem == 3) ||
-           (!digitalRead(BTN_B) && LCD_page == 10 && LCD_menuItem == 2) ||
-           (!digitalRead(BTN_B) && LCD_page == 20 && LCD_menuItem == 1)) 
+  else if ((!digitalRead(JOY_B) && LCD_page == 1 && LCD_menuItem == 3) ||
+           (!digitalRead(JOY_B) && LCD_page == 10 && LCD_menuItem == 2) ||
+           (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 1)) 
   {
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
@@ -575,8 +630,8 @@ void navMenu()
     drawMenu();
     delay(150);
   }
-  else if ((!digitalRead(BTN_B) && LCD_page == 10 && LCD_menuItem == 3) ||
-           (!digitalRead(BTN_B) && LCD_page == 20 && LCD_menuItem == 2)) 
+  else if ((!digitalRead(JOY_B) && LCD_page == 10 && LCD_menuItem == 3) ||
+           (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 2)) 
   {
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
@@ -586,10 +641,11 @@ void navMenu()
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 20 && LCD_menuItem == 3) 
+  else if (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 3) 
   {
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
+    clapEnabled = 1;
     
     LCD_page = 6; //Changes to Lyd Menu
     LCD_menuItem = 1;
@@ -597,25 +653,25 @@ void navMenu()
     delay(150);
   }
   
-  else if (!digitalRead(BTN_C) && LCD_page == 1 && LCD_menuItem == 3) 
+  else if (!digitalRead(JOY_C) && LCD_page == 1 && LCD_menuItem == 3) 
   {
     LCD_page = 10; //Scrolls down
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_C) && LCD_page == 10 && LCD_menuItem == 3) 
+  else if (!digitalRead(JOY_C) && LCD_page == 10 && LCD_menuItem == 3) 
   {
     LCD_page = 20; //Scrolls down
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_A) && LCD_page == 10 && LCD_menuItem == 1) 
+  else if (!digitalRead(JOY_A) && LCD_page == 10 && LCD_menuItem == 1) 
   {
     LCD_page = 1; //Scrolls up
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_A) && LCD_page == 20 && LCD_menuItem == 1) 
+  else if (!digitalRead(JOY_A) && LCD_page == 20 && LCD_menuItem == 1) 
   {
     LCD_page = 10; //Scrolls up
     drawMenu();
@@ -623,57 +679,57 @@ void navMenu()
   }
   
   //RGB CONTROL
-  else if (!digitalRead(BTN_B) && LCD_page == 2 && LCD_menuItem == 2) //Increase RGB_RED
+  else if (!digitalRead(JOY_B) && LCD_page == 2 && LCD_menuItem == 2) //Increase RGB_R
   {
     rgbColor("red", 1);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_D) && LCD_page == 2 && LCD_menuItem == 2) //Decrease RGB_RED
+  else if (!digitalRead(JOY_D) && LCD_page == 2 && LCD_menuItem == 2) //Decrease RGB_R
   {
     rgbColor("red", 0);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 2 && LCD_menuItem == 3) //Increase RGB_GREEN
+  else if (!digitalRead(JOY_B) && LCD_page == 2 && LCD_menuItem == 3) //Increase RGB_G
   {
     rgbColor("green", 1);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_D) && LCD_page == 2 && LCD_menuItem == 3) //Decrease RGB_GREEN
+  else if (!digitalRead(JOY_D) && LCD_page == 2 && LCD_menuItem == 3) //Decrease RGB_G
   {
     rgbColor("green", 0);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 2 && LCD_menuItem == 4) //Increase RGB_BLUE
+  else if (!digitalRead(JOY_B) && LCD_page == 2 && LCD_menuItem == 4) //Increase RGB_B
   {
     rgbColor("blue", 1);
     drawMenu();
     delay(1);
   }
-  else if (!digitalRead(BTN_D) && LCD_page == 2 && LCD_menuItem == 4) //Decrease RGB_BLUE
+  else if (!digitalRead(JOY_D) && LCD_page == 2 && LCD_menuItem == 4) //Decrease RGB_B
   {
     rgbColor("blue", 0);
     drawMenu();
     delay(1);
   }
   
-  //BUZZER CONTROL
-  else if (!digitalRead(BTN_B) && LCD_page == 3 && LCD_menuItem == 2) //Play mario theme
+  //BUZZER_S CONTROL
+  else if (!digitalRead(JOY_B) && LCD_page == 3 && LCD_menuItem == 2) //Play mario theme
   {
     playSong("Mario");
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 3 && LCD_menuItem == 3) //Play pirates theme
+  else if (!digitalRead(JOY_B) && LCD_page == 3 && LCD_menuItem == 3) //Play pirates theme
   {
     playSong("Pirates");
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 3 && LCD_menuItem == 4) //Play crazy theme
+  else if (!digitalRead(JOY_B) && LCD_page == 3 && LCD_menuItem == 4) //Play crazy theme
   {
     playSong("Crazy");
     drawMenu();
@@ -681,25 +737,25 @@ void navMenu()
   }
   
   //DISPLAY CONTROL
-  else if (!digitalRead(BTN_B) && LCD_page == 4 && LCD_menuItem == 2) //Increase Contrast
+  else if (!digitalRead(JOY_B) && LCD_page == 4 && LCD_menuItem == 2) //Increase Contrast
   {
     displayChange("contrast", 1);
     drawMenu();
     delay(2);
   }
-  else if (!digitalRead(BTN_D) && LCD_page == 4 && LCD_menuItem == 2) //Decrease Contrast
+  else if (!digitalRead(JOY_D) && LCD_page == 4 && LCD_menuItem == 2) //Decrease Contrast
   {
     displayChange("contrast", 0);
     drawMenu();
     delay(2);
   }
-  else if (!digitalRead(BTN_B) && LCD_page == 4 && LCD_menuItem == 3) //Increase Backlight
+  else if (!digitalRead(JOY_B) && LCD_page == 4 && LCD_menuItem == 3) //Increase Backlight
   {
     displayChange("backlight", 1);
     drawMenu();
     delay(2);
   }
-  else if (!digitalRead(BTN_D) && LCD_page == 4 && LCD_menuItem == 3) //Decrease Backlight
+  else if (!digitalRead(JOY_D) && LCD_page == 4 && LCD_menuItem == 3) //Decrease Backlight
   {
     displayChange("backlight", 0);
     drawMenu();
@@ -707,10 +763,12 @@ void navMenu()
   }
   
   //Back button
-  else if ( !digitalRead(BTN_D) && LCD_page != 1 && LCD_menuItem == 1) 
+  else if ( !digitalRead(JOY_D) && LCD_page != 1 && LCD_menuItem == 1) 
   {
     LCD_menuItem = LCD_lastMenuItem; //Goes back to Main meny
     LCD_page = LCD_lastPage;
+    clapEnabled = 0; //Diables clapping
+    setColor(0,0,0);
     drawMenu();
     delay(150);
   }
@@ -722,42 +780,42 @@ void rgbColor(String color, bool increase)
   {
     flowOn = 0;
     redVal ++;
-    analogWrite(RGB_RED, redVal);
+    analogWrite(RGB_R, redVal);
   }
   
   if (color == "red" && !increase && redVal > 0 )
   {
     flowOn = 0;
     redVal --;
-    analogWrite(RGB_RED, redVal);
+    analogWrite(RGB_R, redVal);
   }
   
   if (color == "green" && increase && greenVal < 255 )
   {
     flowOn = 0;
     greenVal ++;
-    analogWrite(RGB_GREEN, greenVal);
+    analogWrite(RGB_G, greenVal);
   }
   
   if (color == "green" && !increase && greenVal > 0 )
   {
     flowOn = 0;
     greenVal --;
-    analogWrite(RGB_GREEN, greenVal);
+    analogWrite(RGB_G, greenVal);
   }
   
   if (color == "blue" && increase && blueVal < 255 )
   {
     flowOn = 0;
     blueVal ++;
-    analogWrite(RGB_BLUE, blueVal);
+    analogWrite(RGB_B, blueVal);
   }
   
   if (color == "blue" && !increase && blueVal != 0 )
   {
     flowOn = 0;
     blueVal --;
-    analogWrite(RGB_BLUE, blueVal);
+    analogWrite(RGB_B, blueVal);
   }
 }
 
@@ -768,20 +826,20 @@ void playSong(String song)
     for (int thisNote = 0; thisNote < (sizeof(MarioUW_note)/sizeof(int)); thisNote++) {
       
       int noteDuration = 1000 / MarioUW_duration[thisNote];//convert duration to time delay
-      tone(BUZZER, MarioUW_note[thisNote], noteDuration);
+      tone(BUZZER_S, MarioUW_note[thisNote], noteDuration);
 
       int pauseBetweenNotes = noteDuration * 1.80;
       delay(pauseBetweenNotes);
       
-      if (!digitalRead(BTN_A) || 
-          !digitalRead(BTN_B) ||
-          !digitalRead(BTN_C) ||
-          !digitalRead(BTN_D))
+      if (!digitalRead(JOY_A) || 
+          !digitalRead(JOY_B) ||
+          !digitalRead(JOY_C) ||
+          !digitalRead(JOY_D))
       {
         thisNote = 100;
       }
       
-      noTone(BUZZER); //stop music on pin 8 
+      noTone(BUZZER_S);
     }
   }
   
@@ -790,20 +848,20 @@ void playSong(String song)
     for (int thisNote = 0; thisNote < (sizeof(Pirates_note)/sizeof(int)); thisNote++) {
   
       int noteDuration = 1000 / Pirates_duration[thisNote];//convert duration to time delay
-      tone(BUZZER, Pirates_note[thisNote], noteDuration);
+      tone(BUZZER_S, Pirates_note[thisNote], noteDuration);
 
       int pauseBetweenNotes = noteDuration * 1.05; //Here 1.05 is tempo, increase to play it slower
       delay(pauseBetweenNotes);
       
-      if (!digitalRead(BTN_A) || 
-          !digitalRead(BTN_B) ||
-          !digitalRead(BTN_C) ||
-          !digitalRead(BTN_D))
+      if (!digitalRead(JOY_A) || 
+          !digitalRead(JOY_B) ||
+          !digitalRead(JOY_C) ||
+          !digitalRead(JOY_D))
       {
         thisNote = 100;
       }
       
-      noTone(BUZZER); //stop music on pin 4
+      noTone(BUZZER_S);
     }
   }
   
@@ -812,20 +870,20 @@ void playSong(String song)
     for (int thisNote = 0; thisNote < (sizeof(CrazyFrog_note)/sizeof(int)); thisNote++) {
     
       int noteDuration = 1000 / CrazyFrog_duration[thisNote]; //convert duration to time delay
-      tone(BUZZER, CrazyFrog_note[thisNote], noteDuration);
+      tone(BUZZER_S, CrazyFrog_note[thisNote], noteDuration);
 
       int pauseBetweenNotes = noteDuration * 1.30;//Here 1.30 is tempo, decrease to play it faster
       delay(pauseBetweenNotes);
       
-      if (!digitalRead(BTN_A) || 
-          !digitalRead(BTN_B) ||
-          !digitalRead(BTN_C) ||
-          !digitalRead(BTN_D))
+      if (!digitalRead(JOY_A) || 
+          !digitalRead(JOY_B) ||
+          !digitalRead(JOY_C) ||
+          !digitalRead(JOY_D))
       {
         thisNote = 100;
       }
       
-      noTone(BUZZER);
+      noTone(BUZZER_S);
     }
   }
 }
@@ -860,4 +918,45 @@ void displayChange(String setting, bool increase)
     LCD_backlight --;
     analogWrite(LCD_BL, LCD_backlight);
   }
+}
+
+void clapIncr()
+{
+  currMillis = millis();
+  
+  if ((currMillis - prevMillis  >= 150) && clapEnabled)
+  {
+    prevMillis = currMillis;
+    newColor();
+    clapCount ++; 
+  }
+}
+
+void newColor()
+{
+  int colors[6][3] = {
+    {200, 0, 0},
+    {0, 200, 0},
+    {0, 0, 200},
+    {200, 200, 0},
+    {80, 0, 80},
+    {0, 255, 255}
+  }; //Detta har tommy laga
+  
+  randInt = random(0,5);
+  
+  while (randInt == oldRand)
+  {
+    randInt = random(0,5);
+  }
+  
+  oldRand = randInt;
+  setColor(colors[randInt][0], colors[randInt][1], colors[randInt][2]);
+}
+
+void setColor(int red, int green, int blue)
+{
+  analogWrite(RGB_R, red);
+  analogWrite(RGB_G, green);
+  analogWrite(RGB_B, blue);  
 }
