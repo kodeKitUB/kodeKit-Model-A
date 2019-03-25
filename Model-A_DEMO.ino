@@ -147,7 +147,7 @@ void setup()
   lcd.drawBitmap(0,0, kodekitLogo, 84, 48, 1);
   lcd.display();
   
-  delay(4000);
+  delay(3000);
   
   lcd.clearDisplay(); 
   lcd.display();
@@ -484,7 +484,8 @@ void drawMenu()
     lcd.setCursor(0, 20);
     lcd.print("Backlight");
     lcd.setCursor(60, 20);
-    lcd.print(LCD_backlight);
+    float backlightVolt = LCD_backlight * 0.0196;
+    lcd.print(backlightVolt);
     lcd.display();
   }
   
@@ -603,6 +604,9 @@ void navMenu()
     LCD_lastPage = LCD_page;
     
     LCD_page = 2; //Changes to RGB Menu
+    analogWrite(RGB_R, redVal);
+    analogWrite(RGB_G, greenVal);
+    analogWrite(RGB_B, blueVal);
     LCD_menuItem = 1;
     drawMenu();
     delay(150);
@@ -763,7 +767,7 @@ void navMenu()
   }
   
   //Back button
-  else if ( !digitalRead(JOY_D) && LCD_page != 1 && LCD_menuItem == 1) 
+  else if (((!digitalRead(JOY_D) || (!digitalRead(JOY_B)) && LCD_page != 1 && LCD_menuItem == 1)))
   {
     LCD_menuItem = LCD_lastMenuItem; //Goes back to Main meny
     LCD_page = LCD_lastPage;
@@ -779,42 +783,42 @@ void rgbColor(String color, bool increase)
   if (color == "red" && increase && redVal < 255 )
   {
     flowOn = 0;
-    redVal ++;
+    redVal += 5;
     analogWrite(RGB_R, redVal);
   }
   
   if (color == "red" && !increase && redVal > 0 )
   {
     flowOn = 0;
-    redVal --;
+    redVal -= 5;
     analogWrite(RGB_R, redVal);
   }
   
   if (color == "green" && increase && greenVal < 255 )
   {
     flowOn = 0;
-    greenVal ++;
+    greenVal += 5;
     analogWrite(RGB_G, greenVal);
   }
   
   if (color == "green" && !increase && greenVal > 0 )
   {
     flowOn = 0;
-    greenVal --;
+    greenVal -= 5;
     analogWrite(RGB_G, greenVal);
   }
   
   if (color == "blue" && increase && blueVal < 255 )
   {
     flowOn = 0;
-    blueVal ++;
+    blueVal += 5;
     analogWrite(RGB_B, blueVal);
   }
   
   if (color == "blue" && !increase && blueVal != 0 )
   {
     flowOn = 0;
-    blueVal --;
+    blueVal -= 5;
     analogWrite(RGB_B, blueVal);
   }
 }
@@ -910,12 +914,12 @@ void displayChange(String setting, bool increase)
   }
   if (setting == "backlight" && increase && LCD_backlight < 170)
   {
-    LCD_backlight ++;
+    LCD_backlight += 5;
     analogWrite(LCD_BL, LCD_backlight);
   }
   if (setting == "backlight" && !increase && LCD_backlight > 0)
   {
-    LCD_backlight --;
+    LCD_backlight -= 5;
     analogWrite(LCD_BL, LCD_backlight);
   }
 }
