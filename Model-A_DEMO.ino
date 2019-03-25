@@ -2,21 +2,15 @@
 *
 * Official code for kodeKit NM Demo
 * Created by Augustin Winther 
-* NOTE!
-* D3 PWM is disabled when using the tone();
-*/
-
-/*
-*
 *
 */
-
 
 #include <TroykaDHT.h>
 #include <pitches.h>
 #include <themes.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
+
 
 //LCD Pins
 #define LCD_RST 7
@@ -41,15 +35,15 @@ Adafruit_PCD8544 lcd = Adafruit_PCD8544(LCD_CLK, LCD_DIN, LCD_DC, LCD_CE, LCD_RS
 #define RGB_G 10
 #define RGB_B 11
 
-//BUZZER_S Pin
+//Buzzer Pin
 #define BUZZER_S 8
 
-//Sesnor pins
+//Sensor pins
 #define LYD_DO 2
 #define DHT_OUT A5
-
 DHT dht(DHT_OUT, DHT11);
 
+//LCD Navigation Variables
 int LCD_contrast = 60;
 int LCD_backlight = 100;
 int LCD_menuItem = 1;
@@ -57,34 +51,30 @@ int LCD_page = 1;
 int LCD_lastMenuItem = 1;
 int LCD_lastPage = 1;
 
+//RGB Variables
 int redVal = 0;
 int greenVal = 0;
 int blueVal = 0;
-bool flowOn = 0;
-
-float humi = dht.getHumidity();
-float temp = dht.getTemperatureC();
-
-int clapCount = 0;
-bool clapEnabled = 0;
-unsigned long prevMillis = 0;
-unsigned long currMillis = 0;
-
 int randInt = 0;
 int oldRand = 0;
 
+//Buzzer(Songs) Variables
+float tempoVar = 1;
+float pitchVar = 1;
+
+//Sensor varibles
+float humi = dht.getHumidity();
+float temp = dht.getTemperatureC();
+int clapCount = 0;
+bool clapEnabled = 0;
+
+
+//Time Variables
+unsigned long prevMillis = 0;
+unsigned long currMillis = 0;
+
+
 const uint8_t PROGMEM kodekitLogo[] = { 
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
 B00000000,B00000111,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
 B00000000,B00011000,B11000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
 B00000000,B01100000,B00110000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
@@ -112,16 +102,6 @@ B00000001,B10000010,B00001100,B00000000,B00000000,B00000000,B00000000,B00000000,
 B00000000,B01100010,B00110000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
 B00000000,B00011010,B11000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
 B00000000,B00000111,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
-B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,
 };
 
 void setup() 
@@ -144,7 +124,7 @@ void setup()
   lcd.setContrast(LCD_contrast);
   
   lcd.clearDisplay();
-  lcd.drawBitmap(0,0, kodekitLogo, 84, 48, 1);
+  lcd.drawBitmap(0,10, kodekitLogo, 84, 27, 1);
   lcd.display();
   
   delay(3000);
@@ -164,9 +144,8 @@ void loop()
   dht.read();
   temp = dht.getTemperatureC();
   humi = dht.getHumidity();
-  
+
   navMenu();
-  rgbFlow();
   drawMenu();
 }
 
@@ -424,7 +403,7 @@ void drawMenu()
       lcd.setTextColor(BLACK, WHITE);
     }
     lcd.setCursor(0, 20);
-    lcd.print("Pirates theme");
+    lcd.print("Pirates Theme");
     
     //******************//
     if (LCD_menuItem == 4) 
@@ -578,7 +557,7 @@ void drawMenu()
 
 void navMenu() 
 {
-  //Menu Navigation
+  //Moves down the menu
   if ((!digitalRead(JOY_C) && LCD_page == 1 && LCD_menuItem != 3) ||
       (!digitalRead(JOY_C) && LCD_page == 2 && LCD_menuItem != 4) ||
       (!digitalRead(JOY_C) && LCD_page == 3 && LCD_menuItem != 4) ||
@@ -588,40 +567,72 @@ void navMenu()
       (!digitalRead(JOY_C) && LCD_page == 10 && LCD_menuItem != 3) ||
       (!digitalRead(JOY_C) && LCD_page == 20 && LCD_menuItem != 3))
   {
-    LCD_menuItem ++; //Moves down the menu
+    LCD_menuItem ++;
     drawMenu();
     delay(150);
   }
+  
+  //Moves up the menu
   else if (!digitalRead(JOY_A) && LCD_menuItem != 1) 
   {
-    LCD_menuItem --; //Moves up the menu
+    LCD_menuItem --;
     drawMenu();
     delay(150);
   }
+  
+  //Scrolls down
+  else if (!digitalRead(JOY_C) && LCD_page == 1 && LCD_menuItem == 3) 
+  {
+    LCD_page = 10;
+    drawMenu();
+    delay(150);
+  }
+  else if (!digitalRead(JOY_C) && LCD_page == 10 && LCD_menuItem == 3) 
+  {
+    LCD_page = 20;
+    drawMenu();
+    delay(150);
+  }
+  
+  //Scrolls up
+  else if (!digitalRead(JOY_A) && LCD_page == 10 && LCD_menuItem == 1) 
+  {
+    LCD_page = 1; 
+    drawMenu();
+    delay(150);
+  }
+  else if (!digitalRead(JOY_A) && LCD_page == 20 && LCD_menuItem == 1) 
+  {
+    LCD_page = 10;
+    drawMenu();
+    delay(150);
+  }
+  
+  //Changes to RGB Menu
   else if (!digitalRead(JOY_B) && LCD_page == 1 && LCD_menuItem == 1) 
   {
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
-    
-    LCD_page = 2; //Changes to RGB Menu
-    analogWrite(RGB_R, redVal);
-    analogWrite(RGB_G, greenVal);
-    analogWrite(RGB_B, blueVal);
+    LCD_page = 2;
+    setColor(redVal, greenVal, blueVal); //Turns RGB on
     LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
+  
+  //Changes to BUZZER Menu
   else if ((!digitalRead(JOY_B) && LCD_page == 1 && LCD_menuItem == 2) ||
            (!digitalRead(JOY_B) && LCD_page == 10 && LCD_menuItem == 1)) 
   {
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
-    
-    LCD_page = 3; //Changes to BUZZER_S Menu
+    LCD_page = 3; 
     LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
+  
+  //Changes to Display Menu
   else if ((!digitalRead(JOY_B) && LCD_page == 1 && LCD_menuItem == 3) ||
            (!digitalRead(JOY_B) && LCD_page == 10 && LCD_menuItem == 2) ||
            (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 1)) 
@@ -629,55 +640,32 @@ void navMenu()
     LCD_lastMenuItem = LCD_menuItem;
     LCD_lastPage = LCD_page;
     
-    LCD_page = 4; //Changes to Display Menu
-    LCD_menuItem = 1;
-    drawMenu();
-    delay(150);
-  }
-  else if ((!digitalRead(JOY_B) && LCD_page == 10 && LCD_menuItem == 3) ||
-           (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 2)) 
-  {
-    LCD_lastMenuItem = LCD_menuItem;
-    LCD_lastPage = LCD_page;
-    
-    LCD_page = 5; //Changes to Temp Menu
-    LCD_menuItem = 1;
-    drawMenu();
-    delay(150);
-  }
-  else if (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 3) 
-  {
-    LCD_lastMenuItem = LCD_menuItem;
-    LCD_lastPage = LCD_page;
-    clapEnabled = 1;
-    
-    LCD_page = 6; //Changes to Lyd Menu
+    LCD_page = 4;
     LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
   
-  else if (!digitalRead(JOY_C) && LCD_page == 1 && LCD_menuItem == 3) 
+  //Changes to Temp Menu
+  else if ((!digitalRead(JOY_B) && LCD_page == 10 && LCD_menuItem == 3) ||
+           (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 2)) 
   {
-    LCD_page = 10; //Scrolls down
+    LCD_lastMenuItem = LCD_menuItem;
+    LCD_lastPage = LCD_page;
+    LCD_page = 5;
+    LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
-  else if (!digitalRead(JOY_C) && LCD_page == 10 && LCD_menuItem == 3) 
+  
+  //Changes to Lyd Menu
+  else if (!digitalRead(JOY_B) && LCD_page == 20 && LCD_menuItem == 3) 
   {
-    LCD_page = 20; //Scrolls down
-    drawMenu();
-    delay(150);
-  }
-  else if (!digitalRead(JOY_A) && LCD_page == 10 && LCD_menuItem == 1) 
-  {
-    LCD_page = 1; //Scrolls up
-    drawMenu();
-    delay(150);
-  }
-  else if (!digitalRead(JOY_A) && LCD_page == 20 && LCD_menuItem == 1) 
-  {
-    LCD_page = 10; //Scrolls up
+    LCD_lastMenuItem = LCD_menuItem;
+    LCD_lastPage = LCD_page;
+    clapEnabled = 1;
+    LCD_page = 6;
+    LCD_menuItem = 1;
     drawMenu();
     delay(150);
   }
@@ -720,7 +708,7 @@ void navMenu()
     delay(1);
   }
   
-  //BUZZER_S CONTROL
+  //BUZZER CONTROL
   else if (!digitalRead(JOY_B) && LCD_page == 3 && LCD_menuItem == 2) //Play mario theme
   {
     playSong("Mario");
@@ -767,12 +755,12 @@ void navMenu()
   }
   
   //Back button
-  else if (((!digitalRead(JOY_D) || (!digitalRead(JOY_B)) && LCD_page != 1 && LCD_menuItem == 1)))
+  else if ((!digitalRead(JOY_D) || !digitalRead(JOY_B)) && LCD_page != 1 && LCD_menuItem == 1)
   {
     LCD_menuItem = LCD_lastMenuItem; //Goes back to Main meny
     LCD_page = LCD_lastPage;
     clapEnabled = 0; //Diables clapping
-    setColor(0,0,0);
+    setColor(0, 0, 0); //Disables RGB
     drawMenu();
     delay(150);
   }
@@ -782,42 +770,36 @@ void rgbColor(String color, bool increase)
 {
   if (color == "red" && increase && redVal < 255 )
   {
-    flowOn = 0;
     redVal += 5;
     analogWrite(RGB_R, redVal);
   }
   
   if (color == "red" && !increase && redVal > 0 )
   {
-    flowOn = 0;
     redVal -= 5;
     analogWrite(RGB_R, redVal);
   }
   
   if (color == "green" && increase && greenVal < 255 )
   {
-    flowOn = 0;
     greenVal += 5;
     analogWrite(RGB_G, greenVal);
   }
   
   if (color == "green" && !increase && greenVal > 0 )
   {
-    flowOn = 0;
     greenVal -= 5;
     analogWrite(RGB_G, greenVal);
   }
   
   if (color == "blue" && increase && blueVal < 255 )
   {
-    flowOn = 0;
     blueVal += 5;
     analogWrite(RGB_B, blueVal);
   }
   
   if (color == "blue" && !increase && blueVal != 0 )
   {
-    flowOn = 0;
     blueVal -= 5;
     analogWrite(RGB_B, blueVal);
   }
@@ -829,10 +811,12 @@ void playSong(String song)
   {
     for (int thisNote = 0; thisNote < (sizeof(MarioUW_note)/sizeof(int)); thisNote++) {
       
-      int noteDuration = 1000 / MarioUW_duration[thisNote];//convert duration to time delay
-      tone(BUZZER_S, MarioUW_note[thisNote], noteDuration);
+      int noteDuration = 1000 / MarioUW_duration[thisNote];
+      
+      songControl();
+      tone(BUZZER_S, (MarioUW_note[thisNote] * pitchVar), noteDuration);
 
-      int pauseBetweenNotes = noteDuration * 1.80;
+      int pauseBetweenNotes = noteDuration * (1.80 * tempoVar);
       delay(pauseBetweenNotes);
       
       if (!digitalRead(JOY_A) || 
@@ -851,10 +835,12 @@ void playSong(String song)
   {
     for (int thisNote = 0; thisNote < (sizeof(Pirates_note)/sizeof(int)); thisNote++) {
   
-      int noteDuration = 1000 / Pirates_duration[thisNote];//convert duration to time delay
-      tone(BUZZER_S, Pirates_note[thisNote], noteDuration);
+      int noteDuration = 1000 / Pirates_duration[thisNote];
+      
+      songControl();
+      tone(BUZZER_S, (Pirates_note[thisNote] * pitchVar), noteDuration);
 
-      int pauseBetweenNotes = noteDuration * 1.05; //Here 1.05 is tempo, increase to play it slower
+      int pauseBetweenNotes = noteDuration * (1.05 * tempoVar);
       delay(pauseBetweenNotes);
       
       if (!digitalRead(JOY_A) || 
@@ -873,10 +859,12 @@ void playSong(String song)
   {
     for (int thisNote = 0; thisNote < (sizeof(CrazyFrog_note)/sizeof(int)); thisNote++) {
     
-      int noteDuration = 1000 / CrazyFrog_duration[thisNote]; //convert duration to time delay
-      tone(BUZZER_S, CrazyFrog_note[thisNote], noteDuration);
+      int noteDuration = 1000 / CrazyFrog_duration[thisNote];
+      
+      songControl();
+      tone(BUZZER_S, (CrazyFrog_note[thisNote] * pitchVar), noteDuration);
 
-      int pauseBetweenNotes = noteDuration * 1.30;//Here 1.30 is tempo, decrease to play it faster
+      int pauseBetweenNotes = noteDuration * (1.30 * tempoVar);
       delay(pauseBetweenNotes);
       
       if (!digitalRead(JOY_A) || 
@@ -890,14 +878,9 @@ void playSong(String song)
       noTone(BUZZER_S);
     }
   }
-}
-
-void rgbFlow()
-{
-  if (flowOn)
-  {
-    //DO SOMETHING
-  }
+  //Resets Pitch and Tempo varibles
+  pitchVar = 1;
+  tempoVar = 1;
 }
 
 void displayChange(String setting, bool increase)
@@ -924,7 +907,7 @@ void displayChange(String setting, bool increase)
   }
 }
 
-void clapIncr()
+void clapIncr() //Increases "Teller"
 {
   currMillis = millis();
   
@@ -936,7 +919,7 @@ void clapIncr()
   }
 }
 
-void newColor()
+void newColor() //Gives RGB new color
 {
   int colors[6][3] = {
     {200, 0, 0},
@@ -945,7 +928,7 @@ void newColor()
     {200, 200, 0},
     {80, 0, 80},
     {0, 255, 255}
-  }; //Detta har tommy laga
+  };
   
   randInt = random(0,5);
   
@@ -958,9 +941,38 @@ void newColor()
   setColor(colors[randInt][0], colors[randInt][1], colors[randInt][2]);
 }
 
-void setColor(int red, int green, int blue)
+void setColor(int red, int green, int blue) //Set new color to RGB
 {
   analogWrite(RGB_R, red);
   analogWrite(RGB_G, green);
   analogWrite(RGB_B, blue);  
+}
+
+void songControl()
+{
+  if (analogRead(JOY_Y) > 600)
+  {
+    pitchVar = 2.3;
+  }
+  else if (analogRead(JOY_Y) < 400)
+  {
+    pitchVar = 0.4;
+  }
+  else
+  {
+   pitchVar = 1;
+  }
+  
+  if (analogRead(JOY_X) < 400)
+  {
+    tempoVar = 1.5;
+  }
+  else if (analogRead(JOY_X) > 600)
+  {
+    tempoVar = 0.5;
+  }
+  else
+  {
+   tempoVar = 1;
+  }
 }
